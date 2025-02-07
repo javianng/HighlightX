@@ -137,6 +137,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-center">
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="mr-4 text-sm text-gray-700 hover:text-gray-900"
+                >
+                  Edit Profile
+                </button>
                 <span className="mr-4">{user?.email}</span>
                 <button
                   onClick={handleLogout}
