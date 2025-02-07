@@ -14,6 +14,14 @@ import DeckEditor from "~/components/DeckEditor";
 import DeckList from "~/components/DeckList";
 import Marketplace from "~/components/Marketplace";
 import ProtectedRoute from "~/components/ProtectedRoute";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { logout } from "~/lib/auth";
 import { useAuth } from "~/lib/AuthContext";
 import { db } from "~/lib/firebase";
@@ -28,6 +36,12 @@ export default function DashboardPage() {
   const [decks, setDecks] = useState<DeckWithId[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<DeckWithId | null>(null);
   const [storeDecks, setStoreDecks] = useState<StoreDeck[]>([]);
+
+  const handleTabChange = (value: string) => {
+    if (value === "decks" || value === "marketplace") {
+      setActiveTab(value);
+    }
+  };
 
   const fetchDecks = async () => {
     if (!user) return;
@@ -107,57 +121,35 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-100">
-        <nav className="bg-white shadow-sm">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 justify-between">
-              <div className="flex items-center space-x-8">
-                <h1 className="text-xl font-semibold">Dashboard</h1>
-                <div className="hidden sm:flex sm:space-x-4">
-                  <button
-                    onClick={() => setActiveTab("decks")}
-                    className={`px-3 py-2 text-sm font-medium ${
-                      activeTab === "decks"
-                        ? "text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    My Decks
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("marketplace")}
-                    className={`px-3 py-2 text-sm font-medium ${
-                      activeTab === "marketplace"
-                        ? "text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    Marketplace
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <button
-                  onClick={() => router.push("/profile")}
-                  className="mr-4 text-sm text-gray-700 hover:text-gray-900"
-                >
-                  Edit Profile
-                </button>
-                <span className="mr-4">{user?.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Logout
-                </button>
-              </div>
+      <div className="min-h-screen">
+        <header className="border-b">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-xl font-semibold">HighlightX</h1>
+              <Tabs value={activeTab} onValueChange={handleTabChange}>
+                <TabsList>
+                  <TabsTrigger value="decks">My Decks</TabsTrigger>
+                  <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => router.push("/profile")}>
+                Edit Profile
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {user?.email}
+              </span>
+              <Button variant="default" onClick={handleLogout}>
+                Logout
+              </Button>
             </div>
           </div>
-        </nav>
+        </header>
 
-        <main className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          {activeTab === "decks" && (
-            <div className="space-y-6">
+        <main className="container mx-auto py-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsContent value="decks">
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                 <div className="lg:col-span-1">
                   <DeckList
@@ -174,29 +166,29 @@ export default function DashboardPage() {
                       onClose={() => setSelectedDeck(null)}
                     />
                   ) : (
-                    <div className="rounded-lg border-4 border-dashed border-gray-200 p-8 text-center">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        Select a Deck
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Choose a deck from the list to view and edit its
-                        contents
-                      </p>
-                    </div>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Select a Deck</CardTitle>
+                        <CardDescription>
+                          Choose a deck from the list to view and edit its
+                          contents
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
 
-          {activeTab === "marketplace" && (
-            <Marketplace
-              storeDecks={storeDecks}
-              userDecks={decks}
-              onPurchase={handlePurchaseComplete}
-              onListDeck={handleListDeck}
-            />
-          )}
+            <TabsContent value="marketplace">
+              <Marketplace
+                storeDecks={storeDecks}
+                userDecks={decks}
+                onPurchase={handlePurchaseComplete}
+                onListDeck={handleListDeck}
+              />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </ProtectedRoute>

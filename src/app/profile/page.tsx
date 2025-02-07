@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "types/types";
 import ProtectedRoute from "~/components/ProtectedRoute";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { useAuth } from "~/lib/AuthContext";
 import { db } from "~/lib/firebase";
 
@@ -76,100 +81,76 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="mx-auto max-w-md space-y-8">
-          <div>
-            <h2 className="text-center text-3xl font-extrabold text-gray-900">
-              Edit Profile
-            </h2>
-          </div>
+      <div className="container mx-auto flex min-h-screen items-center py-12">
+        <Card className="mx-auto w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">Edit Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
-            </div>
-          )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, name: e.target.value })
+                    }
+                    required
+                  />
+                </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4 rounded-md shadow-sm">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, name: e.target.value })
-                  }
-                  className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  required
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, email: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile_picture">Profile Picture URL</Label>
+                  <Input
+                    id="profile_picture"
+                    type="url"
+                    value={profileData.profile_picture}
+                    onChange={(e) =>
+                      setProfileData({
+                        ...profileData,
+                        profile_picture: e.target.value,
+                      })
+                    }
+                    placeholder="https://example.com/profile.jpg"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+              <div className="flex justify-end space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard")}
                 >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, email: e.target.value })
-                  }
-                  className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  required
-                />
+                  Cancel
+                </Button>
+                <Button type="submit">Save Changes</Button>
               </div>
-
-              <div>
-                <label
-                  htmlFor="profile_picture"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Profile Picture URL
-                </label>
-                <input
-                  id="profile_picture"
-                  type="url"
-                  value={profileData.profile_picture}
-                  onChange={(e) =>
-                    setProfileData({
-                      ...profileData,
-                      profile_picture: e.target.value,
-                    })
-                  }
-                  className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                  placeholder="https://example.com/profile.jpg"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => router.push("/dashboard")}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </ProtectedRoute>
   );

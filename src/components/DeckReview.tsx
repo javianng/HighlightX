@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { Deck } from "types/types";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { reviewCard } from "~/lib/deckOperations";
 
 interface DeckReviewProps {
@@ -56,24 +58,21 @@ export default function DeckReview({
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {deck.deck_name} - Review
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-          >
+          <h2 className="text-2xl font-bold">{deck.deck_name} - Review</h2>
+          <Button onClick={onClose} variant="outline">
             Exit Review
-          </button>
+          </Button>
         </div>
-        <div className="rounded-lg border-4 border-dashed border-gray-200 p-8 text-center">
-          <h3 className="text-lg font-medium text-gray-900">
-            No Cards to Review
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Add some cards to this deck to start reviewing.
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>No Cards to Review</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Add some cards to this deck to start reviewing.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -82,32 +81,28 @@ export default function DeckReview({
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold">
             {deck.deck_name} - Review Complete
           </h2>
           <div className="flex gap-2">
-            <button
-              onClick={handleRestartReview}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
+            <Button onClick={handleRestartReview} variant="default">
               Review Again
-            </button>
-            <button
-              onClick={onClose}
-              className="rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
+            </Button>
+            <Button onClick={onClose} variant="outline">
               Exit Review
-            </button>
+            </Button>
           </div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <h3 className="text-lg font-medium text-gray-900">
-            Review Complete!
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            You&apos;ve reviewed all {totalNotes} cards in this deck.
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Review Complete!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              You&apos;ve reviewed all {totalNotes} cards in this deck.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -120,28 +115,23 @@ export default function DeckReview({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {deck.deck_name} - Review
-          </h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-2xl font-bold">{deck.deck_name} - Review</h2>
+          <p className="text-sm text-muted-foreground">
             Card {currentNoteIndex + 1} of {totalNotes}
           </p>
         </div>
-        <button
-          onClick={onClose}
-          className="rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-        >
+        <Button onClick={onClose} variant="outline">
           Exit Review
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="space-y-4">
+      <Card>
+        <CardContent className="space-y-4 p-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Book</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Book</h3>
             <p className="mt-1">{currentNote.book_name}</p>
             {currentNote.book_detail && (
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {currentNote.book_detail}
               </p>
             )}
@@ -149,8 +139,10 @@ export default function DeckReview({
 
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Note</h3>
-              <div className="mt-2 rounded-md bg-gray-50 p-4">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Note
+              </h3>
+              <div className="mt-2 rounded-md bg-muted p-4">
                 <p className="whitespace-pre-wrap">
                   {currentNote.note_content.content_latest}
                 </p>
@@ -158,50 +150,55 @@ export default function DeckReview({
             </div>
 
             {!showAnswer ? (
-              <button
+              <Button
                 onClick={handleShowAnswer}
-                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                className="w-full"
+                variant="default"
               >
                 Show Answer
-              </button>
+              </Button>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-md bg-green-50 p-4">
-                  <h4 className="text-sm font-medium text-green-800">
+                <div className="rounded-md bg-muted p-4">
+                  <h4 className="text-sm font-medium">
                     How well did you remember this?
                   </h4>
                   <div className="mt-4 flex justify-between gap-2">
-                    <button
+                    <Button
                       onClick={() => handleRateCard(1)}
-                      className="flex-1 rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                      variant="destructive"
+                      className="flex-1"
                     >
                       Failed
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleRateCard(3)}
-                      className="flex-1 rounded-md bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700"
+                      variant="secondary"
+                      className="flex-1"
                     >
                       Hard
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleRateCard(4)}
-                      className="flex-1 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                      variant="default"
+                      className="flex-1"
                     >
                       Good
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleRateCard(5)}
-                      className="flex-1 rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+                      variant="default"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                     >
                       Easy
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

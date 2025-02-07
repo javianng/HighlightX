@@ -1,5 +1,19 @@
+import type { ChangeEvent } from "react";
 import { useState } from "react";
 import type { Deck, Note } from "types/types";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Textarea } from "~/components/ui/textarea";
 import { addCardToDeck, editCard } from "~/lib/deckOperations";
 import DeckReview from "./DeckReview";
 
@@ -66,143 +80,142 @@ export default function DeckEditor({
     }
   };
 
+  const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setNewNote({ ...newNote, content: e.target.value });
+  };
+
+  const handleEditContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setEditingContent(e.target.value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">{deck.deck_name}</h2>
+        <h2 className="text-2xl font-bold">{deck.deck_name}</h2>
         <div className="flex gap-2">
-          <button
-            onClick={() => setMode("review")}
-            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-          >
+          <Button onClick={() => setMode("review")} variant="default">
             Start Review
-          </button>
-          <button
-            onClick={onClose}
-            className="rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-          >
+          </Button>
+          <Button onClick={onClose} variant="outline">
             Exit Editor
-          </button>
+          </Button>
         </div>
       </div>
 
-      <form
-        onSubmit={handleAddNote}
-        className="space-y-4 rounded-lg border border-gray-200 bg-white p-4"
-      >
-        <h3 className="text-lg font-medium">Add New Note</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            type="text"
-            value={newNote.bookName}
-            onChange={(e) =>
-              setNewNote({ ...newNote, bookName: e.target.value })
-            }
-            placeholder="Book Name"
-            className="rounded-md border border-gray-300 px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={newNote.bookDetail}
-            onChange={(e) =>
-              setNewNote({ ...newNote, bookDetail: e.target.value })
-            }
-            placeholder="Book Detail (optional)"
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </div>
-        <textarea
-          value={newNote.content}
-          onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-          placeholder="Note Content"
-          className="h-24 w-full rounded-md border border-gray-300 px-3 py-2"
-          required
-        />
-        <button
-          type="submit"
-          className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Add Note
-        </button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Note</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAddNote} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bookName">Book Name</Label>
+                <Input
+                  id="bookName"
+                  value={newNote.bookName}
+                  onChange={(e) =>
+                    setNewNote({ ...newNote, bookName: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bookDetail">Book Detail (optional)</Label>
+                <Input
+                  id="bookDetail"
+                  value={newNote.bookDetail}
+                  onChange={(e) =>
+                    setNewNote({ ...newNote, bookDetail: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="content">Note Content</Label>
+              <Textarea
+                id="content"
+                value={newNote.content}
+                onChange={handleContentChange}
+                className="h-24"
+                required
+              />
+            </div>
+            <Button type="submit">Add Note</Button>
+          </form>
+        </CardContent>
+      </Card>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Book
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Detail
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Content
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Reviews
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {deck.notes.map((note: Note, index: number) => (
-              <tr key={index}>
-                <td className="whitespace-nowrap px-6 py-4">
-                  {note.book_name}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  {note.book_detail ?? "-"}
-                </td>
-                <td className="px-6 py-4">
-                  {editingNoteIndex === index ? (
-                    <div className="flex gap-2">
-                      <textarea
-                        value={editingContent}
-                        onChange={(e) => setEditingContent(e.target.value)}
-                        className="flex-1 rounded-md border border-gray-300 px-3 py-2"
-                      />
-                      <button
-                        onClick={() => handleEditNote(index)}
-                        className="rounded-md bg-green-600 px-3 py-1 text-white hover:bg-green-700"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingNoteIndex(null)}
-                        className="rounded-md bg-gray-600 px-3 py-1 text-white hover:bg-gray-700"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="max-w-xl whitespace-pre-wrap">
-                      {note.note_content.content_latest}
-                    </div>
-                  )}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  {note.review_count}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <button
-                    onClick={() => {
-                      setEditingNoteIndex(index);
-                      setEditingContent(note.note_content.content_latest);
-                    }}
-                    className="rounded-md bg-yellow-600 px-3 py-1 text-sm text-white hover:bg-yellow-700"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Book</TableHead>
+                <TableHead>Detail</TableHead>
+                <TableHead>Content</TableHead>
+                <TableHead>Reviews</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {deck.notes.map((note: Note, index: number) => (
+                <TableRow key={index}>
+                  <TableCell>{note.book_name}</TableCell>
+                  <TableCell>{note.book_detail ?? "-"}</TableCell>
+                  <TableCell>
+                    {editingNoteIndex === index ? (
+                      <div className="flex gap-2">
+                        <Textarea
+                          value={editingContent}
+                          onChange={handleEditContentChange}
+                          className="flex-1"
+                        />
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            onClick={() => handleEditNote(index)}
+                            variant="default"
+                            size="sm"
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            onClick={() => setEditingNoteIndex(null)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="max-w-xl whitespace-pre-wrap">
+                        {note.note_content.content_latest}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{note.review_count}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => {
+                        setEditingNoteIndex(index);
+                        setEditingContent(note.note_content.content_latest);
+                      }}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      Edit
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
