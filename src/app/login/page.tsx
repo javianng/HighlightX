@@ -1,10 +1,17 @@
 "use client";
 
+import { Separator } from "@radix-ui/react-dropdown-menu";
 import { type User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type User as DbUser } from "types/types";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { signIn, signInWithGoogle, signUp } from "~/lib/auth";
 import { db } from "~/lib/firebase";
 
@@ -16,20 +23,14 @@ export default function LoginPage() {
   const router = useRouter();
 
   const createUserDocument = async (user: FirebaseUser) => {
-    if (!user.email) {
-      throw new Error("User email is required");
-    }
+    if (!user.email) throw new Error("User email is required");
 
-    const email: string = user.email; // Explicit type assertion
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
       const newUser: DbUser = {
-        user_info: {
-          name: email.split("@")[0] ?? "", // Default name from email
-          email: email,
-        },
+        user_info: { name: user.email.split("@")[0] ?? "", email: user.email },
         purchases: [],
       };
       await setDoc(userRef, newUser);
@@ -44,12 +45,7 @@ export default function LoginPage() {
       const user = isLogin
         ? await signIn(email, password)
         : await signUp(email, password);
-
-      // Create user document if it doesn't exist
-      if (user) {
-        await createUserDocument(user);
-      }
-
+      if (user) await createUserDocument(user);
       router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -59,12 +55,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       const user = await signInWithGoogle();
-
-      // Create user document if it doesn't exist
-      if (user) {
-        await createUserDocument(user);
-      }
-
+      if (user) await createUserDocument(user);
       router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -72,101 +63,72 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isLogin ? "Sign in to your account" : "Create a new account"}
-          </h2>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-md">
+        <div className="p-4">
+          <Link href="/">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-center">
+            {isLogin ? "Sign in to your account" : "Create a new account"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
                 type="email"
-                autoComplete="email"
-                required
-                className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
-                name="password"
                 type="password"
-                autoComplete="current-password"
-                required
-                className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
-          </div>
-
-          {error && (
-            <div className="text-center text-sm text-red-500">{error}</div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <Button type="submit" className="w-full">
               {isLogin ? "Sign in" : "Sign up"}
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-gray-50 px-2 text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <button
-              onClick={handleGoogleSignIn}
-              className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <img
-                className="mr-2 h-5 w-5"
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google logo"
-              />
-              Sign in with Google
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center text-sm">
-          <button
-            className="font-medium text-blue-600 hover:text-blue-500"
-            onClick={() => setIsLogin(!isLogin)}
+            </Button>
+          </form>
+          <Separator className="my-4" />
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleSignIn}
           >
-            {isLogin
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
-          </button>
-        </div>
-      </div>
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google logo"
+              className="mr-2 h-5 w-5"
+            />
+            Sign in with Google
+          </Button>
+          <p className="mt-4 text-center text-sm">
+            <button
+              className="hover:underline"
+              onClick={() => setIsLogin(!isLogin)}
+            >
+              {isLogin
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

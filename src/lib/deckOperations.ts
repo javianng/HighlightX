@@ -21,6 +21,7 @@ export async function createNewDeck(deckName: string): Promise<string> {
       deck_author: user.uid,
       created_at: new Date().toISOString(),
       notes: [],
+      description: "",
     };
 
     // Create a new deck in the user's decks sub-collection

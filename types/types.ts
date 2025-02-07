@@ -22,6 +22,7 @@ export const DeckSchema = z.object({
   deck_name: z.string(),
   deck_author: z.string(), // Reference to User ID
   created_at: z.string(), // Firestore Timestamp as string
+  description: z.string().default(""), // Description of the deck
   notes: z.array(NoteSchema),
 });
 

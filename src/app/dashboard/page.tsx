@@ -14,6 +14,8 @@ import DeckEditor from "~/components/DeckEditor";
 import DeckList from "~/components/DeckList";
 import Marketplace from "~/components/Marketplace";
 import ProtectedRoute from "~/components/ProtectedRoute";
+import ReviewAll from "~/components/ReviewAll";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -21,6 +23,13 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { logout } from "~/lib/auth";
 import { useAuth } from "~/lib/AuthContext";
@@ -36,6 +45,7 @@ export default function DashboardPage() {
   const [decks, setDecks] = useState<DeckWithId[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<DeckWithId | null>(null);
   const [storeDecks, setStoreDecks] = useState<StoreDeck[]>([]);
+  const [showReviewAll, setShowReviewAll] = useState(false);
 
   const handleTabChange = (value: string) => {
     if (value === "decks" || value === "marketplace") {
@@ -133,62 +143,112 @@ export default function DashboardPage() {
                 </TabsList>
               </Tabs>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => router.push("/profile")}>
-                Edit Profile
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {user?.email}
-              </span>
-              <Button variant="default" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar>
+                    <AvatarImage src={user?.photoURL ?? undefined} />
+                    <AvatarFallback>?</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.displayName ?? user?.email?.split("@")[0]}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  Edit Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
         <main className="container mx-auto py-6">
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsContent value="decks">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-                <div className="lg:col-span-1">
-                  <DeckList
-                    decks={decks}
-                    onDeckSelect={setSelectedDeck}
-                    onDecksChange={fetchDecks}
-                  />
-                </div>
-                <div className="lg:col-span-3">
-                  {selectedDeck ? (
-                    <DeckEditor
-                      deck={selectedDeck}
-                      onDeckChange={fetchDecks}
-                      onClose={() => setSelectedDeck(null)}
-                    />
-                  ) : (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Select a Deck</CardTitle>
-                        <CardDescription>
-                          Choose a deck from the list to view and edit its
-                          contents
-                        </CardDescription>
-                      </CardHeader>
-                    </Card>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              {activeTab === "decks" && (
+                <Button
+                  onClick={() => setShowReviewAll(true)}
+                  variant="outline"
+                >
+                  Review All Notes
+                </Button>
+              )}
+            </div>
+          </div>
 
-            <TabsContent value="marketplace">
-              <Marketplace
-                storeDecks={storeDecks}
-                userDecks={decks}
-                onPurchase={handlePurchaseComplete}
-                onListDeck={handleListDeck}
-              />
-            </TabsContent>
-          </Tabs>
+          {showReviewAll ? (
+            <ReviewAll
+              decks={decks}
+              onClose={() => setShowReviewAll(false)}
+              onDeckChange={fetchDecks}
+            />
+          ) : (
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <div className="mb-6 flex items-center justify-between">
+                <TabsList>
+                  <TabsTrigger value="decks">My Decks</TabsTrigger>
+                  <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="decks">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+                  <div className="lg:col-span-1">
+                    <DeckList
+                      decks={decks}
+                      onDeckSelect={setSelectedDeck}
+                      onDecksChange={fetchDecks}
+                    />
+                  </div>
+                  <div className="lg:col-span-3">
+                    {selectedDeck ? (
+                      <DeckEditor
+                        deck={selectedDeck}
+                        onDeckChange={fetchDecks}
+                        onClose={() => setSelectedDeck(null)}
+                      />
+                    ) : (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Select a Deck</CardTitle>
+                          <CardDescription>
+                            Choose a deck from the list to view and edit its
+                            contents
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="marketplace">
+                <Marketplace
+                  storeDecks={storeDecks}
+                  userDecks={decks}
+                  onPurchase={handlePurchaseComplete}
+                  onListDeck={handleListDeck}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
         </main>
       </div>
     </ProtectedRoute>
