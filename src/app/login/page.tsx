@@ -1,8 +1,12 @@
 "use client";
 
+import { type User as FirebaseUser } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { type User as DbUser } from "types/types";
 import { signIn, signInWithGoogle, signUp } from "~/lib/auth";
+import { db } from "~/lib/firebase";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,16 +15,41 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const createUserDocument = async (user: FirebaseUser) => {
+    if (!user.email) {
+      throw new Error("User email is required");
+    }
+
+    const email: string = user.email; // Explicit type assertion
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      const newUser: DbUser = {
+        user_info: {
+          name: email.split("@")[0] ?? "", // Default name from email
+          email: email,
+        },
+        purchases: [],
+      };
+      await setDoc(userRef, newUser);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      if (isLogin) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password);
+      const user = isLogin
+        ? await signIn(email, password)
+        : await signUp(email, password);
+
+      // Create user document if it doesn't exist
+      if (user) {
+        await createUserDocument(user);
       }
+
       router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -29,7 +58,13 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      const user = await signInWithGoogle();
+
+      // Create user document if it doesn't exist
+      if (user) {
+        await createUserDocument(user);
+      }
+
       router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
